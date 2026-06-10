@@ -3,7 +3,7 @@
 # Redis: external Upstash (set REDIS_URL env var)
 
 # ─── Stage 1: Build Next.js ───────────────────────────
-FROM node:20-alpine AS web-builder
+FROM node:22-alpine AS web-builder
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
@@ -21,7 +21,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN cd apps/web && pnpm run build
 
 # ─── Stage 2: Runtime ─────────────────────────────────
-FROM node:20-alpine
+FROM node:22-alpine
 RUN apk add --no-cache nginx supervisor
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
