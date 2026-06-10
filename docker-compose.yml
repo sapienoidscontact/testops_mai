@@ -1,0 +1,97 @@
+version: "3.9"
+
+# ═══════════════════════════════════════════════════════
+#  M.AI0.1 — Docker Compose
+#  Minimal stack: app + redis. No GPU services needed.
+#  Works identically on: local dev / Hostinger / Oracle ARM
+# ═══════════════════════════════════════════════════════
+
+services:
+
+  # ─── Core App (API + Orchestrator) ──────────────────
+  app:
+    build:
+      context: .
+      dockerfile: dockerfiles/app.Dockerfile
+    container_name: mai01-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3001}:3001"
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3001
+      REDIS_URL: redis://redis:6379
+      BASE_URL: ${BASE_URL:-http://localhost:3001}
+      PUBLIC_URL: ${PUBLIC_URL:-https://spaienoids.com/mai0.1}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY}
+      SAMBANOVA_API_KEY: ${SAMBANOVA_API_KEY}
+      HUGGINGFACE_API_KEY: ${HUGGINGFACE_API_KEY}
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
+      JWT_SECRET: ${JWT_SECRET}
+      SESSION_SECRET: ${SESSION_SECRET}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      SELF_MOD_ENABLED: ${SELF_MOD_ENABLED:-true}
+      PANIC_STOP_ENABLED: ${PANIC_STOP_ENABLED:-true}
+    volumes:
+      - ./data:/app/data
+      - ./projects:/app/projects:ro
+      - ./config:/app/config:ro
+      - ./core/runtime:/app/core/runtime:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ─── Web UI (Next.js) ────────────────────────────────
+  web:
+    build:
+      context: apps/web
+      dockerfile: ../../dockerfiles/web.Dockerfile
+    container_name: mai01-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      NEXT_PUBLIC_API_URL: ${BASE_URL:-http://localhost:3001}
+      NEXT_PUBLIC_WS_URL: ${WS_URL:-ws://localhost:3001}
+    depends_on:
+      - app
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', r => process.exit(r.statusCode < 400 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ─── Redis (state, health tracking, pub-sub) ────────
+  redis:
+    image: redis:7-alpine
+    container_name: mai01-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  default:
+    name: mai01-network

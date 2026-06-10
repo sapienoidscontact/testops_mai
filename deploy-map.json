@@ -1,0 +1,23 @@
+{
+  "project": "testops_mai",
+  "source": "P:/MAI0.1",
+  "components": [
+    {
+      "folder": ".",
+      "host": "azure-container-apps",
+      "dockerfile": "dockerfiles/combined.Dockerfile",
+      "container_app": "mai01",
+      "resource_group": "sapienoids-rg",
+      "environment": "sapienoids-env",
+      "public_url": null,
+      "status": "pending-deploy",
+      "notes": "One container: nginx (port 80) → Next.js (:3000) + Express (:3001). Redis via Upstash. CI/CD via GitHub Actions on push to master."
+    }
+  ],
+  "shared_services": {
+    "llm_gateway": "BYOK — users provide own keys; server fallback via .env",
+    "tts": "browser-native speechSynthesis — no Kokoro needed",
+    "stt": "Groq Whisper API — user BYOK key"
+  },
+  "redis": "Upstash — set REDIS_URL in Azure Container App env vars"
+}

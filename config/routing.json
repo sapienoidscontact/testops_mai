@@ -1,0 +1,98 @@
+{
+  "_comment": "Provider routing — cloud-only, all free tiers, no credit card required. Add providers to order lists; router tries them left-to-right and never blocks on cost.",
+  "tasks": {
+    "voice_reply_fast": {
+      "order": ["gemini-3.5-flash", "gemini-2.5-flash", "groq:llama-3.1-8b-instant", "cerebras:llama3.1-8b", "openrouter:llama-3.3-70b"],
+      "notes": "3.5 Flash primary, 2.5 Flash backup, OpenRouter last resort."
+    },
+    "chat": {
+      "order": ["gemini-3.5-flash", "gemini-2.5-flash", "groq:llama-3.3-70b-versatile", "cerebras:llama3.3-70b", "sambanova:Meta-Llama-3.3-70B-Instruct", "openrouter:llama-3.3-70b", "openrouter:deepseek-r1"],
+      "notes": "3.5 Flash primary, Groq/Cerebras/SambaNova fallback, OpenRouter last resort."
+    },
+    "code": {
+      "order": ["gemini-3.5-flash", "gemini-2.5-flash", "groq:qwen-2.5-coder-32b", "sambanova:Meta-Llama-3.3-70B-Instruct", "openrouter:deepseek-r1"],
+      "notes": "3.5 Flash primary, DeepSeek-V3 via OpenRouter for code fallback."
+    },
+    "code_review": {
+      "order": ["gemini-3.5-flash", "gemini-2.5-flash", "groq:llama-3.3-70b-versatile", "cerebras:llama3.3-70b", "openrouter:deepseek-r1"],
+      "notes": "3.5 Flash primary, DeepSeek-V3 via OpenRouter as last resort."
+    },
+    "reasoning": {
+      "order": ["gemini-2.5-pro", "gemini-3.5-flash", "gemini-2.5-flash", "groq:llama-3.3-70b-versatile", "sambanova:Meta-Llama-3.3-70B-Instruct", "openrouter:qwen3-235b"],
+      "notes": "2.5 Pro primary (deep reasoning), Qwen3-235b via OpenRouter as last resort."
+    },
+    "vision": {
+      "order": ["gemini-3.5-flash", "gemini-2.5-flash"],
+      "notes": "3.5 Flash primary, 2.5 Flash backup."
+    },
+    "embedding": {
+      "order": ["gemini-embedding-004", "huggingface:BAAI/bge-small-en-v1.5"],
+      "notes": "Vector embeddings for memory and search."
+    },
+    "summarization": {
+      "order": ["gemini-3.5-flash", "gemini-2.5-flash", "groq:llama-3.1-8b-instant", "cerebras:llama3.1-8b", "openrouter:llama-3.3-70b"],
+      "notes": "3.5 Flash primary, OpenRouter last resort."
+    },
+    "transcription": {
+      "order": ["groq:whisper-large-v3-turbo", "browser:web-speech-api"],
+      "notes": "STT. Groq Whisper is free, no card. Browser fallback for live mic."
+    },
+    "tts": {
+      "order": ["browser:speech-synthesis"],
+      "notes": "TTS. Browser built-in — zero cost, zero latency, works everywhere."
+    }
+  },
+  "providers": {
+    "gemini-3.5-flash": {
+      "free_tier_limit_info": "check aistudio.google.com/models for current limits",
+      "signup_url": "https://aistudio.google.com/apikey",
+      "requires_card": false
+    },
+    "gemini-2.5-flash": {
+      "free_tier_limit_info": "1500 req/day, 15 req/min — informational only, not enforced",
+      "signup_url": "https://aistudio.google.com/apikey",
+      "requires_card": false
+    },
+    "gemini-2.5-pro": {
+      "free_tier_limit_info": "50 req/day — informational only",
+      "signup_url": "https://aistudio.google.com/apikey",
+      "requires_card": false
+    },
+    "gemini-embedding-004": {
+      "free_tier_limit_info": "1500 req/day",
+      "signup_url": "https://aistudio.google.com/apikey",
+      "requires_card": false
+    },
+    "groq": {
+      "free_tier_limit_info": "daily token limits per model — informational only",
+      "signup_url": "https://console.groq.com",
+      "requires_card": false
+    },
+    "cerebras": {
+      "free_tier_limit_info": "rate-limited free tier",
+      "signup_url": "https://cloud.cerebras.ai",
+      "requires_card": false
+    },
+    "sambanova": {
+      "free_tier_limit_info": "free cloud inference tier",
+      "signup_url": "https://cloud.sambanova.ai",
+      "requires_card": false
+    },
+    "huggingface": {
+      "free_tier_limit_info": "inference API free tier",
+      "signup_url": "https://huggingface.co/settings/tokens",
+      "requires_card": false
+    },
+    "openrouter": {
+      "free_tier_limit_info": "free models marked :free — no credit required",
+      "signup_url": "https://openrouter.ai/keys",
+      "requires_card": false
+    }
+  },
+  "preferences": {
+    "prefer_local_when_available": false,
+    "deprioritize_after_failures": 3,
+    "recovery_check_interval_s": 300,
+    "never_block_on_cost": true
+  }
+}

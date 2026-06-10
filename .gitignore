@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment — NEVER commit secrets
+.env
+.env.local
+.env.*.local
+secrets/
+
+# Build output
+dist/
+.next/
+out/
+build/
+
+# Runtime state
+*.log
+pnpm-debug.log*
+.pids/
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker volumes
+volumes/
+
+# IDE
+.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Project imports — user code, not this repo's code
+# (projects/ tracked in git but never contains secrets)
+projects/**/.env
+projects/**/node_modules/
+projects/**/dist/
+projects/**/.next/
+
+# Certs / keys
+*.pfx
+*.pem
+*.key
+*.crt
+
+# Long-term memory (user data, not source)
+data/memory/*.json

@@ -1,0 +1,14 @@
+{
+  "_comment": "Registry of imported projects. Managed by intake wizard. Add manually or run `pnpm run intake`.",
+  "projects": [
+    {
+      "id": "mailyn-prime",
+      "name": "Palawan Creator",
+      "description": "AI-powered Instagram Reels automation for a Filipino community creator in Puerto Princesa, Palawan.",
+      "path": "P:\\MailynPrime\\palawan-creator",
+      "status": "active",
+      "api_base": "http://localhost:8765",
+      "pillars": ["BALITA_NGAYON", "JOB_ALERT", "OFW_PAMILYA", "LUTONG_PALAWAN", "HIWAGA_KALIKASAN", "KALIKASAN_PALAWAN", "GOV_SCHEMES"]
+    }
+  ]
+}
