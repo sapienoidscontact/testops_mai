@@ -12,8 +12,9 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
 COPY apps/web/package.json ./apps/web/package.json
 COPY core/package.json     ./core/package.json
 
-# Install (no frozen — core/package.json was added for Docker compatibility)
-RUN pnpm install --no-frozen-lockfile
+# --shamefully-hoist flattens node_modules so Next.js nft tracer can follow
+# real files instead of pnpm symlinks — required for correct standalone build
+RUN pnpm install --no-frozen-lockfile --shamefully-hoist
 
 # Copy source and build
 COPY apps/web/ ./apps/web/
