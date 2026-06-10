@@ -19,6 +19,8 @@ RUN pnpm install --no-frozen-lockfile --shamefully-hoist
 # Copy source and build
 COPY apps/web/ ./apps/web/
 ENV NEXT_TELEMETRY_DISABLED=1
+# CI=true: tells pnpm to skip confirmModulesPurge TTY check in Docker
+ENV CI=true
 RUN cd apps/web && pnpm run build
 
 # ─── Debug: show standalone structure ─────────────────
