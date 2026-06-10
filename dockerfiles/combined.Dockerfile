@@ -44,10 +44,9 @@ COPY config/  ./config/
 COPY scripts/ ./scripts/
 RUN mkdir -p /app/data/memory /app/projects
 
-# Next.js standalone — pnpm auto-detects workspace root, so in a pnpm monorepo
-# Next.js places server.js at standalone/apps/web/ (not standalone/ root)
-COPY --from=web-builder /app/apps/web/.next/standalone/apps/web/ ./apps/web/
-COPY --from=web-builder /app/apps/web/.next/standalone/node_modules/ ./apps/web/node_modules/
+# Next.js standalone — outputFileTracingRoot=__dirname (apps/web) means
+# server.js lands at standalone/ root, with all deps in standalone/node_modules/
+COPY --from=web-builder /app/apps/web/.next/standalone/ ./apps/web/
 COPY --from=web-builder /app/apps/web/.next/static/ ./apps/web/.next/static/
 COPY --from=web-builder /app/apps/web/public/ ./apps/web/public/
 
