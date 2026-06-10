@@ -23,6 +23,7 @@ import { memoryStore } from "../memory/index.js";
 import { skillExecutor } from "../executor/index.js";
 import { prepareSpeech } from "../voice/tts.js";
 import { buildProjectContext } from "../knowledge/project-loader.js";
+import { loadGithubRepos } from "../knowledge/github-loader.js";
 import * as palawanTools from "../tools/palawan-creator.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -41,8 +42,19 @@ const BASE_SYSTEM_PROMPT = readFileSync(
   join(__dirname, "../runtime/system-prompt.md"),
   "utf8"
 );
-// Append registered project knowledge once at startup
-const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT + buildProjectContext();
+
+// Start with local project knowledge; upgrade with GitHub context async
+let SYSTEM_PROMPT = BASE_SYSTEM_PROMPT + buildProjectContext();
+
+// Load GitHub repos non-blocking — ready within a few seconds of cold start
+loadGithubRepos()
+  .then(githubContext => {
+    if (githubContext) {
+      SYSTEM_PROMPT = BASE_SYSTEM_PROMPT + buildProjectContext() + githubContext;
+      logger.info("GitHub repo context loaded into system prompt");
+    }
+  })
+  .catch(err => logger.warn({ err: err.message }, "GitHub context load failed"));
 
 // ─── Middleware ───────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
