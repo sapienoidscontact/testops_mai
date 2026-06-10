@@ -4,13 +4,21 @@
 
 # ─── Stage 1: Build Next.js ───────────────────────────
 FROM node:20-alpine AS web-builder
-WORKDIR /app/web
+WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY apps/web/package.json ./
-RUN pnpm install --frozen-lockfile
-COPY apps/web/ ./
+
+# Full workspace context so pnpm resolves correctly
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+COPY apps/web/package.json ./apps/web/package.json
+COPY core/package.json     ./core/package.json
+
+# Install (--no-frozen-lockfile since core/package.json was added for Docker compatibility)
+RUN pnpm install --no-frozen-lockfile
+
+# Copy source and build
+COPY apps/web/ ./apps/web/
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm run build
+RUN cd apps/web && pnpm run build
 
 # ─── Stage 2: Runtime ─────────────────────────────────
 FROM node:20-alpine
@@ -21,7 +29,9 @@ WORKDIR /app
 
 # Install backend deps
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+COPY apps/web/package.json ./apps/web/package.json
+COPY core/package.json     ./core/package.json
+RUN pnpm install --prod --no-frozen-lockfile --ignore-scripts
 
 # Copy backend source
 COPY core/    ./core/
@@ -30,18 +40,15 @@ COPY scripts/ ./scripts/
 RUN mkdir -p /app/data/memory /app/projects
 
 # Copy Next.js standalone build
-COPY --from=web-builder /app/web/.next/standalone ./apps/web/
-COPY --from=web-builder /app/web/.next/static      ./apps/web/.next/static
-COPY --from=web-builder /app/web/public            ./apps/web/public
+COPY --from=web-builder /app/apps/web/.next/standalone ./apps/web/
+COPY --from=web-builder /app/apps/web/.next/static      ./apps/web/.next/static
+COPY --from=web-builder /app/apps/web/public            ./apps/web/public
 
-# nginx config
-COPY dockerfiles/nginx.conf /etc/nginx/nginx.conf
-
-# supervisord config
+# nginx + supervisor configs
+COPY dockerfiles/nginx.conf      /etc/nginx/nginx.conf
 COPY dockerfiles/supervisord.conf /etc/supervisord.conf
 
 EXPOSE 80
-
 ENV NODE_ENV=production
 ENV PORT=3001
 ENV NEXT_TELEMETRY_DISABLED=1
